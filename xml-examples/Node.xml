@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<nodes xmlns="http://pad.polito.it/dp2/Neo4JSimpleXML">
+	<node id="29">
+		<properties>
+			<property name="name" value="H3" />
+		</properties>
+		<labels>
+			<label>Host</label>
+		</labels>
+	</node>
+	<node id="28">
+		<properties>
+			<property name="name" value="H2" />
+		</properties>
+		<labels>
+			<label>Host</label>
+		</labels>
+	</node>
+	<node id="26">
+		<properties>
+			<property name="name" value="H0" />
+		</properties>
+		<labels>
+			<label>Host</label>
+		</labels>
+	</node>
+	<node id="30">
+		<properties>
+			<property name="name" value="H4" />
+		</properties>
+		<labels>
+			<label>Host</label>
+		</labels>
+	</node>
+	<node id="27">
+		<properties>
+			<property name="name" value="H1" />
+		</properties>
+		<labels>
+			<label>Host</label>
+		</labels>
+	</node>
+	<node id="31">
+		<properties>
+			<property name="name" value="H5" />
+		</properties>
+		<labels>
+			<label>Host</label>
+		</labels>
+	</node>
+</nodes>

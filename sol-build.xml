@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="generate-artifacts" name="NFV-SOL2">
+	<description>
+			Script for NFV Assignment 2 solution
+	</description>
+
+	<target name="generate-artifacts">
+	</target>
+
+</project>

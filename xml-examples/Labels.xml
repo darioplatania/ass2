@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<p:labels xmlns:p="http://pad.polito.it/dp2/Neo4JSimpleXML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pad.polito.it/dp2/Neo4JSimpleXML Neo4JSimpleXML.xsd ">
+  <p:label>p:label</p:label>
+</p:labels>
