@@ -1,10 +1,8 @@
 package it.polito.dp2.NFV.sol2;
 
-import java.io.StringWriter; 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.client.Client;
@@ -35,6 +33,7 @@ public class ReachabilityTesterImpl implements ReachabilityTester {
 	private String BaseURI ;
 	private HashMap<String, Node> Neo4JNodes;
 	private Client client;
+	private String nffg = null;
 	
 	
 	public ReachabilityTesterImpl() throws ReachabilityTesterException {
@@ -81,12 +80,23 @@ public class ReachabilityTesterImpl implements ReachabilityTester {
 
         for (NodeReader node : nffgReader.getNodes()) {
             for (LinkReader link : node.getLinks()) {
-                Relationshipcreate(node.getName(), link.getDestinationNode().getName());
+                NodeLinkRel(node.getName(), link.getDestinationNode().getName());
             }
         }
+        
+      // upload host
+        for (NodeReader node : nffgReader.getNodes()) {
+        		HostPropertiesCreate(node.getHost().getName());
+        }
+        
+        for (NodeReader node : nffgReader.getNodes()) {    
+        		NodeHostRel(node.getName(),node.getHost().getName());
+        }
+        
+        
 
         // correct load
-        nffgName = nffgName;
+        this.nffg = nffgName;
 		
 	}
 
@@ -148,7 +158,7 @@ public class ReachabilityTesterImpl implements ReachabilityTester {
 	}
 	
 	
-	private void Relationshipcreate(String srcNode, String destNode) throws ServiceException {
+	private void NodeLinkRel(String srcNode, String destNode) throws ServiceException {
 
         Relationship rel = new Relationship();
         rel.setType("ForwardsTo");
@@ -158,7 +168,57 @@ public class ReachabilityTesterImpl implements ReachabilityTester {
         Response  resp = client.target(BaseURI+"/node/"+Neo4JNodes.get(srcNode).getId()+"/relationships").request(MediaType.APPLICATION_XML).post(Entity.entity(rel,MediaType.APPLICATION_XML),Response.class);
 
         if ((resp.getStatus() != 200) && (resp.getStatus() != 201)) {
-            throw new ServiceException("(!-3) Error creating relationship");
+            throw new ServiceException("Error creating relationship");
+        }
+    }
+	
+	private void HostPropertiesCreate(String hostName) throws ServiceException {
+		Node node = new Node();
+		
+		//a node has to be created for each NFFG node, with a property named “name” whose value is the NFFG name;
+		Property name_property = new Property();
+		Properties pr = new Properties();
+		
+		name_property.setName("name");
+		name_property.setValue(hostName);
+		
+		pr.getProperty().add(name_property);
+		
+		node.setProperties(pr);
+	
+		Labels labels = new Labels();
+		String label = "Host";
+		labels.getLabel().add(label);
+
+		/*Post node with properties*/
+		Response resp = client.target(BaseURI+"/node").request(MediaType.APPLICATION_XML).post(Entity.entity(node,MediaType.APPLICATION_XML),Response.class);
+		
+		if(resp.getStatus()!=201)
+			throw new ServiceException("Node not create" + resp.getStatus());
+
+		node.setId(resp.readEntity(Node.class).getId());
+		/*mi serve per poi poter fare le relationship*/
+		Neo4JNodes.put(name_property.getValue(), node);
+		
+		/*Post node with label*/
+		resp = client.target(BaseURI+"/node/"+ node.getId()  +"/labels").request(MediaType.APPLICATION_XML).post(Entity.entity(labels,MediaType.APPLICATION_XML),Response.class);
+		
+		if(resp.getStatus()!=204)
+			throw new ServiceException("Label is not created" + resp.getStatus());
+
+	}
+	
+	private void NodeHostRel(String srcNode, String destNode) throws ServiceException {
+
+        Relationship rel = new Relationship();
+        rel.setType("AllocatedOn");
+        rel.setDstNode(Neo4JNodes.get(destNode).getId());
+
+         /* Insert Relationship */
+        Response  resp = client.target(BaseURI+"/node/"+Neo4JNodes.get(srcNode).getId()+"/relationships").request(MediaType.APPLICATION_XML).post(Entity.entity(rel,MediaType.APPLICATION_XML),Response.class);
+
+        if ((resp.getStatus() != 200) && (resp.getStatus() != 201)) {
+            throw new ServiceException("Error creating relationship");
         }
     }
 
