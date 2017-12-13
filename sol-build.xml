@@ -4,8 +4,18 @@
 	<description>
 			Script for NFV Assignment 2 solution
 	</description>
+	
+	<property name="dir" location="gen-src"/>
+	
+	<taskdef name="wjc" classname="org.jvnet.ws.wadl2java.WJCTask">
+		<classpath>
+			<fileset dir="/opt/dp2/shared/lib" includes="*.jar"/>
+		</classpath>
+	</taskdef>
 
 	<target name="generate-artifacts">
+		<echo message="Compiling.."/>
+		<wjc description="${WADL}" package="it.polito.dp2.NFV.sol2" autoSchemaPackage="false" target="${dir}"/>
 	</target>
 
 </project>

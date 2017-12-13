@@ -8,7 +8,8 @@
 	<property environment="env"/>
 	<property name="tomcatUsername" value="root" />
 	<property name="tomcatPassword" value="root" />
-	<property name="server.location" location="${env.CATALINA_HOME}" />
+	<!--<property name="server.location" location="${env.CATALINA_HOME}" />-->
+	<property name="server.location" location="/Users/darioplatania/Documents/apache-tomcat-8.5.24" />
 	<property name="tomcatPort" value="8080" />
 	<property name="tomcatUrl" value="http://localhost:${tomcatPort}/manager/text" />
 
