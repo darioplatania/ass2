@@ -3,6 +3,8 @@ package it.polito.dp2.NFV.sol2;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.client.Client;
@@ -29,9 +31,13 @@ public class ReachabilityTesterImpl implements ReachabilityTester {
 	
 	private NfvReader monitor;
 	private static DateFormat dateFormat;
-	private final String PROPERTY = "it.polito.dp2.NFV.lab2.URL";
-	private String BaseURI ;
-	private HashMap<String, Node> Neo4JNodes;
+	private final static String PROPERTY = "it.polito.dp2.NFV.lab2.URL";
+	private String BaseURI;
+	private static HashMap<String, Node> Neo4JNodes;
+	private static HashMap<String, Node> Neo4JHost;
+	private static HashMap<String, NodeReader> Nodes;
+	private static HashMap<String, NffgReader> NffgMap;
+	private HashMap<String, ExtendedNodeReaderImpl> ext_nodemap;
 	private Client client;
 	private String nffg = null;
 	
@@ -58,6 +64,10 @@ public class ReachabilityTesterImpl implements ReachabilityTester {
 
         // initialize node list
         Neo4JNodes = new HashMap<>();
+        Neo4JHost = new HashMap<>();
+        Nodes = new HashMap<>();
+        NffgMap = new HashMap<>();
+        ext_nodemap = new HashMap<>();
     }
 
 
@@ -65,164 +75,230 @@ public class ReachabilityTesterImpl implements ReachabilityTester {
 	public void loadGraph(String nffgName) throws UnknownNameException, AlreadyLoadedException, ServiceException {
 		// TODO Auto-generated method stub
 		
-		// retrieve nffg for the random generator
+        /*Start isLoaded*/
+        boolean res_nffg = isLoaded(nffgName);
+        if(res_nffg == true)
+        		throw new AlreadyLoadedException("Nffg Loaded Exception!");
+	
+		/*Retrieve nffg for the random generator*/
         NffgReader nffgReader = monitor.getNffg(nffgName);
-
-        // if nffg doesn't exist
-        if (nffgReader == null) {
-            throw new UnknownNameException();
+      
+        /*Correct Load*/
+        NffgMap.put(nffgReader.getName(), nffgReader);
+        System.out.println("SIZE MAPPA CON NFFG: " + NffgMap.size() + " Name NFFG MAP:" + nffgReader.getName());
+        
+        /*Upload all node*/
+        for (NodeReader node : nffgReader.getNodes()) {
+	        	if(node != null) {
+	        		boolean res_node = NodePropertiesCreate(node.getName());
+		        	if(res_node == true) {
+		        		Nodes.put(node.getName(), node);
+		        		printBlankLine();
+		            HostPropertiesCreate(node.getHost().getName());
+		            printBlankLine();
+		            NodeHostRel(node.getName(),node.getHost().getName());
+		        }
+	        	}
         }
         
-     // upload all node
-        for (NodeReader node : nffgReader.getNodes()) {
-            NodePropertiesCreate(node.getName());
-        }
-
-        for (NodeReader node : nffgReader.getNodes()) {
-            for (LinkReader link : node.getLinks()) {
-                NodeLinkRel(node.getName(), link.getDestinationNode().getName());
+       	for(Map.Entry<String, NodeReader> node : Nodes.entrySet()){	
+            for (LinkReader link : node.getValue().getLinks()) {       
+            		printBlankLine();          		
+                NodeLinkRel(node.getValue().getName(), link.getDestinationNode().getName());
             }
         }
-        
-      // upload host
-        for (NodeReader node : nffgReader.getNodes()) {
-        		HostPropertiesCreate(node.getHost().getName());
-        }
-        
-        for (NodeReader node : nffgReader.getNodes()) {    
-        		NodeHostRel(node.getName(),node.getHost().getName());
-        }
-        
-        
 
-        // correct load
-        this.nffg = nffgName;
 		
 	}
 
 	@Override
-	public Set<ExtendedNodeReader> getExtendedNodes(String nffgName)
-			throws UnknownNameException, NoGraphException, ServiceException {
+	public Set<ExtendedNodeReader> getExtendedNodes(String nffgName) throws UnknownNameException, NoGraphException, ServiceException {
 		// TODO Auto-generated method stub
-		return null;
+			
+		/*Retrieve nffg for the random generator*/
+		if(nffgName==null)
+			throw new UnknownNameException("Nffg Null");
+		
+		NffgReader nffgReader = NffgMap.get(nffgName);
+        
+        if(nffgReader == null)
+        		throw new UnknownNameException("Nffg Null getExtendedNodes");
+        
+        for(NodeReader nodeReader : nffgReader.getNodes()) {
+        		if(nodeReader != null) {
+        			if(Neo4JNodes.get(nodeReader.getName()) != null) {
+        				String nodeId = Neo4JNodes.get(nodeReader.getName()).getId();
+        				ExtendedNodeReaderImpl ext_node = new ExtendedNodeReaderImpl(nodeReader,nodeId);
+        				ext_nodemap.put(ext_node.getName(), ext_node);
+        			}
+        		}
+        }
+        
+		return new LinkedHashSet<ExtendedNodeReader>(ext_nodemap.values());
+        //return null;
 	}
 
 	@Override
 	public boolean isLoaded(String nffgName) throws UnknownNameException {
 		// TODO Auto-generated method stub
-		return false;
+		System.out.println("*** INIT isLoaded ***");
+		
+		if(nffgName == null)
+			throw new UnknownNameException("Nffg error null!");
+		
+		if(monitor.getNffg(nffgName) == null)
+			throw new UnknownNameException("Nffg error null!");;
+		
+		if(NffgMap.containsKey(nffgName)) 
+			return true;
+			
+		return false;	
 	}
 	
 	
 /*
- * 
- * MY Function
- * 
+ * **********************
+ * My Function
+ * **********************
  */
 
-	private void NodePropertiesCreate(String nodeName) throws ServiceException {
+	private boolean NodePropertiesCreate(String nodeName) throws ServiceException {
+		System.out.println("*** INIT NODE PROPERTIES CREATE ***");
 		
-		Node node = new Node();
+		if(Neo4JNodes.get(nodeName)==null) {
+			
+			printBlankLine();
+			System.out.println("NON ESISTE IL NODO");
+			
+			Node node = new Node();
+		
+			//a node has to be created for each NFFG node, with a property named “name” whose value is the NFFG name;
+			Property name_property = new Property();
+			Properties pr = new Properties();
+			
+			name_property.setName("name");
+			name_property.setValue(nodeName);
+			
+			pr.getProperty().add(name_property);
+			
+			node.setProperties(pr);
+			
+			Labels labels = new Labels();
+			labels.getLabel().add("Node");
+			node.setLabels(labels);
 	
-		//a node has to be created for each NFFG node, with a property named “name” whose value is the NFFG name;
-		Property name_property = new Property();
-		Properties pr = new Properties();
-		
-		name_property.setName("name");
-		name_property.setValue(nodeName);
-		
-		pr.getProperty().add(name_property);
-		
-		node.setProperties(pr);
-		
-		Labels labels = new Labels();
-		String label = "Node";
-		labels.getLabel().add(label);
-
-		/*Post node with properties*/
-		Response resp = client.target(BaseURI+"/node").request(MediaType.APPLICATION_XML).post(Entity.entity(node,MediaType.APPLICATION_XML),Response.class);
-		
-		if(resp.getStatus()!=201)
-			throw new ServiceException("Node not create" + resp.getStatus());
-
-		node.setId(resp.readEntity(Node.class).getId());
-		/*mi serve per poi poter fare le relationship*/
-		Neo4JNodes.put(name_property.getValue(), node);
-		
-		/*Post node with label*/
-		resp = client.target(BaseURI+"/node/"+ node.getId()  +"/labels").request(MediaType.APPLICATION_XML).post(Entity.entity(labels,MediaType.APPLICATION_XML),Response.class);
-		
-		if(resp.getStatus()!=204)
-			throw new ServiceException("Label is not created" + resp.getStatus());
+			/*Post properties*/
+			Response resp = client.target(BaseURI+"/node").request(MediaType.APPLICATION_XML).post(Entity.entity(node,MediaType.APPLICATION_XML),Response.class);
+			
+			if(resp.getStatus()!=201)
+				throw new ServiceException("Node not create" + resp.getStatus());
+	
+			node.setId(resp.readEntity(Node.class).getId());
+			
+			/*Post label*/
+			resp = client.target(BaseURI+"/node/"+ node.getId()  +"/labels").request(MediaType.APPLICATION_XML).post(Entity.entity(labels,MediaType.APPLICATION_XML),Response.class);
+			
+			if(resp.getStatus()!=204)
+				throw new ServiceException("Label is not created" + resp.getStatus());
+			
+			/*aggiorno la mappa*/
+			Neo4JNodes.put(name_property.getValue(), node);
+			//Neo4JNodes.put(node.getId(), node);
+			System.out.println("DIMENSIONE MAPPA NODI NODEPROP: " + Neo4JNodes.size());
+			System.out.println("*** FINISH NODE PROPERTIES CREATE ***");
+			
+			return true;
+		}
+		else {
+			printBlankLine();
+			System.out.println("ESISTE IL NODO");
+			return false;
+		}
 		
 	}
 	
 	
 	private void NodeLinkRel(String srcNode, String destNode) throws ServiceException {
-
+		
+		System.out.println("*** INIT NODE LINK RELATIONSHIP ***");
+		
         Relationship rel = new Relationship();
         rel.setType("ForwardsTo");
         rel.setDstNode(Neo4JNodes.get(destNode).getId());
 
-         /* Insert Relationship */
+         /*Post Relationship */
         Response  resp = client.target(BaseURI+"/node/"+Neo4JNodes.get(srcNode).getId()+"/relationships").request(MediaType.APPLICATION_XML).post(Entity.entity(rel,MediaType.APPLICATION_XML),Response.class);
 
         if ((resp.getStatus() != 200) && (resp.getStatus() != 201)) {
             throw new ServiceException("Error creating relationship");
         }
+        System.out.println("*** FINISH NODE LINK RELATIONSHIP ***");
     }
 	
 	private void HostPropertiesCreate(String hostName) throws ServiceException {
-		Node node = new Node();
+		System.out.println("*** INIT HOST PROPERTIES CREATE ***");
 		
-		//a node has to be created for each NFFG node, with a property named “name” whose value is the NFFG name;
-		Property name_property = new Property();
-		Properties pr = new Properties();
+		if(Neo4JHost.get(hostName) == null) {
 		
-		name_property.setName("name");
-		name_property.setValue(hostName);
+			Node node = new Node();
+			
+			/*a node has to be created for each NFFG node, with a property named “name” whose value is the NFFG name*/
+			Property name_property = new Property();
+			Properties pr = new Properties();
+			
+			name_property.setName("name");
+			name_property.setValue(hostName);
+			
+			pr.getProperty().add(name_property);
+			
+			node.setProperties(pr);
 		
-		pr.getProperty().add(name_property);
-		
-		node.setProperties(pr);
+			Labels labels = new Labels();
+			labels.getLabel().add("Host");
+			node.setLabels(labels);
 	
-		Labels labels = new Labels();
-		String label = "Host";
-		labels.getLabel().add(label);
-
-		/*Post node with properties*/
-		Response resp = client.target(BaseURI+"/node").request(MediaType.APPLICATION_XML).post(Entity.entity(node,MediaType.APPLICATION_XML),Response.class);
-		
-		if(resp.getStatus()!=201)
-			throw new ServiceException("Node not create" + resp.getStatus());
-
-		node.setId(resp.readEntity(Node.class).getId());
-		/*mi serve per poi poter fare le relationship*/
-		Neo4JNodes.put(name_property.getValue(), node);
-		
-		/*Post node with label*/
-		resp = client.target(BaseURI+"/node/"+ node.getId()  +"/labels").request(MediaType.APPLICATION_XML).post(Entity.entity(labels,MediaType.APPLICATION_XML),Response.class);
-		
-		if(resp.getStatus()!=204)
-			throw new ServiceException("Label is not created" + resp.getStatus());
+			/*Post properties*/
+			Response resp = client.target(BaseURI+"/node").request(MediaType.APPLICATION_XML).post(Entity.entity(node,MediaType.APPLICATION_XML),Response.class);
+			
+			if(resp.getStatus()!=201)
+				throw new ServiceException("Node not create" + resp.getStatus());
+	
+			node.setId(resp.readEntity(Node.class).getId());
+	
+			/*Post label*/
+			resp = client.target(BaseURI+"/node/"+ node.getId()  +"/labels").request(MediaType.APPLICATION_XML).post(Entity.entity(labels,MediaType.APPLICATION_XML),Response.class);
+			
+			if(resp.getStatus()!=204)
+				throw new ServiceException("Label is not created" + resp.getStatus());
+			
+			/*aggiorno la mappa*/
+			Neo4JHost.put(name_property.getValue(), node);
+			
+			System.out.println("*** FINISH HOST PROPERTIES CREATE ***");
+		}
 
 	}
 	
 	private void NodeHostRel(String srcNode, String destNode) throws ServiceException {
+		
+		System.out.println("*** INIT NODE-HOST RELATIONSHIP ***");
 
         Relationship rel = new Relationship();
         rel.setType("AllocatedOn");
-        rel.setDstNode(Neo4JNodes.get(destNode).getId());
-
+        rel.setDstNode(Neo4JHost.get(destNode).getId());
+      
          /* Insert Relationship */
         Response  resp = client.target(BaseURI+"/node/"+Neo4JNodes.get(srcNode).getId()+"/relationships").request(MediaType.APPLICATION_XML).post(Entity.entity(rel,MediaType.APPLICATION_XML),Response.class);
 
         if ((resp.getStatus() != 200) && (resp.getStatus() != 201)) {
             throw new ServiceException("Error creating relationship");
         }
+        System.out.println("*** FINISH NODE-HOST RELATIONSHIP ***");
     }
-
-        
+		
+	private void printBlankLine() {
+		System.out.println(" ");
+	}    
  }
 	
 
