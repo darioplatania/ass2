@@ -85,7 +85,6 @@ public class ReachabilityTesterImpl implements ReachabilityTester {
       
         /*Correct Load*/
         NffgMap.put(nffgReader.getName(), nffgReader);
-        System.out.println("SIZE MAPPA CON NFFG: " + NffgMap.size() + " Name NFFG MAP:" + nffgReader.getName());
         
         /*Upload all node*/
         for (NodeReader node : nffgReader.getNodes()) {
@@ -135,7 +134,6 @@ public class ReachabilityTesterImpl implements ReachabilityTester {
         }
         
 		return new LinkedHashSet<ExtendedNodeReader>(ext_nodemap.values());
-        //return null;
 	}
 
 	@Override
