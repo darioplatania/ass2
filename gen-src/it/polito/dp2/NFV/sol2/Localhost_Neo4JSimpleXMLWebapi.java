@@ -18,7 +18,7 @@ import com.sun.jersey.api.uri.UriTemplate;
 
 @Generated(value = {
     "wadl|http://localhost:8080/Neo4JSimpleXML/webapi/application.wadl"
-}, comments = "wadl2java, http://wadl.java.net", date = "2017-12-16T23:44:10.668+01:00")
+}, comments = "wadl2java, http://wadl.java.net", date = "2018-01-14T11:24:42.583+01:00")
 public class Localhost_Neo4JSimpleXMLWebapi {
 
     /**
@@ -95,6 +95,18 @@ public class Localhost_Neo4JSimpleXMLWebapi {
         return resource(client, BASE_URI);
     }
 
+    public static Localhost_Neo4JSimpleXMLWebapi.Seed seed(Client client, URI baseURI) {
+        return new Localhost_Neo4JSimpleXMLWebapi.Seed(client, baseURI);
+    }
+
+    public static Localhost_Neo4JSimpleXMLWebapi.Seed seed() {
+        return seed(createClient(), BASE_URI);
+    }
+
+    public static Localhost_Neo4JSimpleXMLWebapi.Seed seed(Client client) {
+        return seed(client, BASE_URI);
+    }
+
     public static Localhost_Neo4JSimpleXMLWebapi.Data data(Client client, URI baseURI) {
         return new Localhost_Neo4JSimpleXMLWebapi.Data(client, baseURI);
     }
@@ -154,12 +166,12 @@ public class Localhost_Neo4JSimpleXMLWebapi {
             return new Localhost_Neo4JSimpleXMLWebapi.Data.NodeNodeid(_client, _uriBuilder.buildFromMap(_templateAndMatrixParameterValues), nodeid);
         }
 
-        public Localhost_Neo4JSimpleXMLWebapi.Data.NodeNodeidLabels nodeNodeidLabels(String nodeid) {
-            return new Localhost_Neo4JSimpleXMLWebapi.Data.NodeNodeidLabels(_client, _uriBuilder.buildFromMap(_templateAndMatrixParameterValues), nodeid);
-        }
-
         public Localhost_Neo4JSimpleXMLWebapi.Data.Node node() {
             return new Localhost_Neo4JSimpleXMLWebapi.Data.Node(_client, _uriBuilder.buildFromMap(_templateAndMatrixParameterValues));
+        }
+
+        public Localhost_Neo4JSimpleXMLWebapi.Data.NodeNodeidLabels nodeNodeidLabels(String nodeid) {
+            return new Localhost_Neo4JSimpleXMLWebapi.Data.NodeNodeidLabels(_client, _uriBuilder.buildFromMap(_templateAndMatrixParameterValues), nodeid);
         }
 
         public Localhost_Neo4JSimpleXMLWebapi.Data.NodeNodeidLabelsLabel nodeNodeidLabelsLabel(String nodeid, String label) {
@@ -517,6 +529,40 @@ public class Localhost_Neo4JSimpleXMLWebapi {
                 return new Localhost_Neo4JSimpleXMLWebapi.Data.NodeNodeidLabels(_client, copyUriBuilder, copyMap);
             }
 
+            public<T >T postXml(Object input, GenericType<T> returnType) {
+                UriBuilder localUriBuilder = _uriBuilder.clone();
+                WebResource resource = _client.resource(localUriBuilder.buildFromMap(_templateAndMatrixParameterValues));
+                com.sun.jersey.api.client.WebResource.Builder resourceBuilder = resource.getRequestBuilder();
+                resourceBuilder = resourceBuilder.accept("application/xml");
+                resourceBuilder = resourceBuilder.type("application/xml");
+                ClientResponse response;
+                response = resourceBuilder.method("POST", ClientResponse.class, input);
+                if (response.getStatus()>= 400) {
+                    throw new Localhost_Neo4JSimpleXMLWebapi.WebApplicationExceptionMessage(Response.status(response.getClientResponseStatus()).build());
+                }
+                return response.getEntity(returnType);
+            }
+
+            public<T >T postXml(Object input, Class<T> returnType) {
+                UriBuilder localUriBuilder = _uriBuilder.clone();
+                WebResource resource = _client.resource(localUriBuilder.buildFromMap(_templateAndMatrixParameterValues));
+                com.sun.jersey.api.client.WebResource.Builder resourceBuilder = resource.getRequestBuilder();
+                resourceBuilder = resourceBuilder.accept("application/xml");
+                resourceBuilder = resourceBuilder.type("application/xml");
+                ClientResponse response;
+                response = resourceBuilder.method("POST", ClientResponse.class, input);
+                if (!ClientResponse.class.isAssignableFrom(returnType)) {
+                    if (response.getStatus()>= 400) {
+                        throw new Localhost_Neo4JSimpleXMLWebapi.WebApplicationExceptionMessage(Response.status(response.getClientResponseStatus()).build());
+                    }
+                }
+                if (!ClientResponse.class.isAssignableFrom(returnType)) {
+                    return response.getEntity(returnType);
+                } else {
+                    return returnType.cast(response);
+                }
+            }
+
             public Labels getAsLabels() {
                 UriBuilder localUriBuilder = _uriBuilder.clone();
                 WebResource resource = _client.resource(localUriBuilder.buildFromMap(_templateAndMatrixParameterValues));
@@ -550,40 +596,6 @@ public class Localhost_Neo4JSimpleXMLWebapi {
                 resourceBuilder = resourceBuilder.accept("application/xml");
                 ClientResponse response;
                 response = resourceBuilder.method("GET", ClientResponse.class);
-                if (!ClientResponse.class.isAssignableFrom(returnType)) {
-                    if (response.getStatus()>= 400) {
-                        throw new Localhost_Neo4JSimpleXMLWebapi.WebApplicationExceptionMessage(Response.status(response.getClientResponseStatus()).build());
-                    }
-                }
-                if (!ClientResponse.class.isAssignableFrom(returnType)) {
-                    return response.getEntity(returnType);
-                } else {
-                    return returnType.cast(response);
-                }
-            }
-
-            public<T >T postXml(Object input, GenericType<T> returnType) {
-                UriBuilder localUriBuilder = _uriBuilder.clone();
-                WebResource resource = _client.resource(localUriBuilder.buildFromMap(_templateAndMatrixParameterValues));
-                com.sun.jersey.api.client.WebResource.Builder resourceBuilder = resource.getRequestBuilder();
-                resourceBuilder = resourceBuilder.accept("application/xml");
-                resourceBuilder = resourceBuilder.type("application/xml");
-                ClientResponse response;
-                response = resourceBuilder.method("POST", ClientResponse.class, input);
-                if (response.getStatus()>= 400) {
-                    throw new Localhost_Neo4JSimpleXMLWebapi.WebApplicationExceptionMessage(Response.status(response.getClientResponseStatus()).build());
-                }
-                return response.getEntity(returnType);
-            }
-
-            public<T >T postXml(Object input, Class<T> returnType) {
-                UriBuilder localUriBuilder = _uriBuilder.clone();
-                WebResource resource = _client.resource(localUriBuilder.buildFromMap(_templateAndMatrixParameterValues));
-                com.sun.jersey.api.client.WebResource.Builder resourceBuilder = resource.getRequestBuilder();
-                resourceBuilder = resourceBuilder.accept("application/xml");
-                resourceBuilder = resourceBuilder.type("application/xml");
-                ClientResponse response;
-                response = resourceBuilder.method("POST", ClientResponse.class, input);
                 if (!ClientResponse.class.isAssignableFrom(returnType)) {
                     if (response.getStatus()>= 400) {
                         throw new Localhost_Neo4JSimpleXMLWebapi.WebApplicationExceptionMessage(Response.status(response.getClientResponseStatus()).build());
@@ -2471,6 +2483,95 @@ public class Localhost_Neo4JSimpleXMLWebapi {
                 }
             }
 
+        }
+
+    }
+
+    public static class Seed {
+
+        private Client _client;
+        private UriBuilder _uriBuilder;
+        private Map<String, Object> _templateAndMatrixParameterValues;
+
+        private Seed(Client client, UriBuilder uriBuilder, Map<String, Object> map) {
+            _client = client;
+            _uriBuilder = uriBuilder.clone();
+            _templateAndMatrixParameterValues = map;
+        }
+
+        /**
+         * Create new instance using existing Client instance, and a base URI and any parameters
+         * 
+         */
+        public Seed(Client client, URI baseUri) {
+            _client = client;
+            _uriBuilder = UriBuilder.fromUri(baseUri);
+            _uriBuilder = _uriBuilder.path("seed");
+            _templateAndMatrixParameterValues = new HashMap<String, Object>();
+        }
+
+        public<T >T getAsTextPlain(GenericType<T> returnType) {
+            UriBuilder localUriBuilder = _uriBuilder.clone();
+            WebResource resource = _client.resource(localUriBuilder.buildFromMap(_templateAndMatrixParameterValues));
+            com.sun.jersey.api.client.WebResource.Builder resourceBuilder = resource.getRequestBuilder();
+            resourceBuilder = resourceBuilder.accept("text/plain");
+            ClientResponse response;
+            response = resourceBuilder.method("GET", ClientResponse.class);
+            if (response.getStatus()>= 400) {
+                throw new Localhost_Neo4JSimpleXMLWebapi.WebApplicationExceptionMessage(Response.status(response.getClientResponseStatus()).build());
+            }
+            return response.getEntity(returnType);
+        }
+
+        public<T >T getAsTextPlain(Class<T> returnType) {
+            UriBuilder localUriBuilder = _uriBuilder.clone();
+            WebResource resource = _client.resource(localUriBuilder.buildFromMap(_templateAndMatrixParameterValues));
+            com.sun.jersey.api.client.WebResource.Builder resourceBuilder = resource.getRequestBuilder();
+            resourceBuilder = resourceBuilder.accept("text/plain");
+            ClientResponse response;
+            response = resourceBuilder.method("GET", ClientResponse.class);
+            if (!ClientResponse.class.isAssignableFrom(returnType)) {
+                if (response.getStatus()>= 400) {
+                    throw new Localhost_Neo4JSimpleXMLWebapi.WebApplicationExceptionMessage(Response.status(response.getClientResponseStatus()).build());
+                }
+            }
+            if (!ClientResponse.class.isAssignableFrom(returnType)) {
+                return response.getEntity(returnType);
+            } else {
+                return returnType.cast(response);
+            }
+        }
+
+        public<T >T putTextPlain(Object input, GenericType<T> returnType) {
+            UriBuilder localUriBuilder = _uriBuilder.clone();
+            WebResource resource = _client.resource(localUriBuilder.buildFromMap(_templateAndMatrixParameterValues));
+            com.sun.jersey.api.client.WebResource.Builder resourceBuilder = resource.getRequestBuilder();
+            resourceBuilder = resourceBuilder.type("text/plain");
+            ClientResponse response;
+            response = resourceBuilder.method("PUT", ClientResponse.class, input);
+            if (response.getStatus()>= 400) {
+                throw new Localhost_Neo4JSimpleXMLWebapi.WebApplicationExceptionMessage(Response.status(response.getClientResponseStatus()).build());
+            }
+            return response.getEntity(returnType);
+        }
+
+        public<T >T putTextPlain(Object input, Class<T> returnType) {
+            UriBuilder localUriBuilder = _uriBuilder.clone();
+            WebResource resource = _client.resource(localUriBuilder.buildFromMap(_templateAndMatrixParameterValues));
+            com.sun.jersey.api.client.WebResource.Builder resourceBuilder = resource.getRequestBuilder();
+            resourceBuilder = resourceBuilder.type("text/plain");
+            ClientResponse response;
+            response = resourceBuilder.method("PUT", ClientResponse.class, input);
+            if (!ClientResponse.class.isAssignableFrom(returnType)) {
+                if (response.getStatus()>= 400) {
+                    throw new Localhost_Neo4JSimpleXMLWebapi.WebApplicationExceptionMessage(Response.status(response.getClientResponseStatus()).build());
+                }
+            }
+            if (!ClientResponse.class.isAssignableFrom(returnType)) {
+                return response.getEntity(returnType);
+            } else {
+                return returnType.cast(response);
+            }
         }
 
     }
